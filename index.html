@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anniversary Hunt</title>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-image: url('https://www.bestar.com/wp-content/uploads/2020/12/warm-holida-setting-fireplace-tree.jpeg');
+            background-size: cover;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 90%;
+            width: 400px;
+        }
+        input, button {
+            padding: 10px;
+            width: 100%;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .highlight {
+            background-color: yellow;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Anniversary Hunt</h1>
+        
+        <!-- Part 0: Choose color -->
+        <div id="part0" class="choice-buttons part">
+            <p>Do you prefer red or black?</p>
+            <button onclick="chooseColor('red')">Red</button>
+            <button onclick="chooseColor('black')">Black</button>
+        </div>
+
+        <!-- Part 1: Enter number -->
+        <div id="part1" class="number-input part" style="display: none;">
+            <p>Enter a number between 1 and 10:</p>
+            <input type="number" id="userInput" min="1" max="10">
+            <button onclick="startScavengerHunt()">Start</button>
+            <button onclick="handleStuck()">Stuck?</button>
+        </div>
+
+        <!-- Part 2: Confirmation -->
+        <div id="part2" class="confirmation part" style="display: none;">
+            <p>Did you listen to the song?</p>
+            <button onclick="confirmListening(true)">Yes</button>
+            <button onclick="confirmListening(false)">No</button>
+        </div>
+
+        <!-- Part 3: Choose roses or chocolate -->
+        <div id="part3" class="emoji-buttons part" style="display: none;">
+            <p>Would you like roses or chocolate?</p>
+            <button onclick="chooseOption('roses')">Roses</button>
+            <button onclick="chooseOption('chocolate')">Chocolate</button>
+        </div>
+
+        <!-- Part 4: Final choice (fancy dinner or picnic) -->
+        <div id="part4" class="final-choice-buttons part" style="display: none;">
+            <p>Would you prefer a fancy dinner or a picnic?</p>
+            <button onclick="chooseFinalChoice('fancy')">Fancy Dinner</button>
+            <button onclick="chooseFinalChoice('picnic')">Picnic</button>
+        </div>
+
+        <!-- Part 5: Choose animal (Parrots or Chimps) -->
+        <div id="part5" class="animal-choice part" style="display: none;">
+            <p>Which animal do you prefer: Parrots or Chimps?</p>
+            <button onclick="chooseAnimal('Parrots')">Parrots</button>
+            <button onclick="chooseAnimal('Chimps')">Chimps</button>
+        </div>
+
+        <!-- Part 6: Choose name (Caesar or Trixie) -->
+        <div id="part6" class="name-choice part" style="display: none;">
+            <p>Which name do you prefer: Caesar or Trixie?</p>
+            <button onclick="chooseName('Caesar')">Caesar</button>
+            <button onclick="chooseName('Trixie')">Trixie</button>
+        </div>
+
+        <!-- Part 7: Choose preference (Bunnies or Ducks) -->
+        <div id="part7" class="preference-choice part" style="display: none;">
+            <p>Which do you like more: Bunnies or Ducks?</p>
+            <button onclick="choosePreference('Bunnies')">Bunnies</button>
+            <button onclick="choosePreference('Ducks')">Ducks</button>
+        </div>
+
+        <!-- Summary of Choices -->
+        <div id="summary" style="display: none;">
+            <h2>Your Choices</h2>
+            <p id="choiceColor"></p>
+            <p id="choiceNumber"></p>
+            <p id="choiceFinal"></p>
+            <p id="choiceFinalChoice"></p>
+            <p id="choiceAnimal"></p>
+            <p id="choiceName"></p>
+            <p id="choicePreference"></p>
+        </div>
+    </div>
+
+    <script>
+        let choices = {
+            color: '',
+            number: '',
+            final: '',
+            finalChoice: '',
+            animal: '',
+            name: '',
+            preference: ''
+        };
+
+        function displayPart(partId) {
+            document.querySelectorAll('.part').forEach(part => part.style.display = 'none');
+            document.getElementById(partId).style.display = 'block';
+        }
+
+        function chooseColor(color) {
+            choices.color = color;
+            if (color === 'black') {
+                alert("If red exists, I don't get why you chose this.");
+            }
+            displayPart('part1');
+        }
+
+        function restoreState() {
+            const savedState = localStorage.getItem('scavengerHuntState');
+            if (savedState) {
+                const confirmRestore = confirm("Would you like to restore your previous progress?");
+                if (confirmRestore) {
+                    const state = JSON.parse(savedState);
+                    choices = state.choices;
+                    displayPart(state.currentPart);
+                } else {
+                    displayPart('part0');
+                }
+            } else {
+                displayPart('part0');
+            }
+        }
+
+        function handleStuck() {
+            const confirmReset = confirm("Are you stuck? Would you like to restart the scavenger hunt?");
+            if (confirmReset) {
+                localStorage.removeItem('scavengerHuntState');
+                displayPart('part0');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', restoreState);
+
+        function startScavengerHunt() {
+            const number = parseInt(document.getElementById('userInput').value);
+            if (number >= 1 && number <= 10) {
+                choices.number = number;
+                const url = number % 2 === 0
+                    ? 'https://www.youtube.com/watch?v=hHNh5GEkkuY'
+                    : 'https://www.youtube.com/watch?v=wHd5OthhPvg';
+                alert(`You selected ${number % 2 === 0 ? 'an even' : 'an odd'} number! Here is your link: ${url}`);
+                window.open(url, '_blank');
+                displayPart('part2');
+            } else {
+                alert('Please enter a valid number between 1 and 10.');
+            }
+        }
+
+        function confirmListening(listened) {
+            if (listened) {
+                displayPart('part3');
+            } else {
+                alert('Please listen to the song and come back.');
+            }
+        }
+
+        function chooseOption(option) {
+            choices.final = option;
+            displayPart('part4');
+        }
+
+        function chooseFinalChoice(finalChoice) {
+            choices.finalChoice = finalChoice;
+            displayPart('part5');
+        }
+
+        function chooseAnimal(animal) {
+            choices.animal = animal;
+            displayPart('part6');
+        }
+
+        function chooseName(name) {
+            choices.name = name;
+            displayPart('part7');
+        }
+
+        function choosePreference(preference) {
+            choices.preference = preference;
+            displayPart('summary');
+            displaySummary();
+        }
+
+        function displaySummary() {
+            document.getElementById('choiceColor').innerText = `Color Preference: ${choices.color}`;
+            document.getElementById('choiceNumber').innerText = `Number: ${choices.number}`;
+            document.getElementById('choiceFinal').innerText = `Final Choice: ${choices.final}`;
+            document.getElementById('choiceFinalChoice').innerText = `Final Preference: ${choices.finalChoice}`;
+            document.getElementById('choiceAnimal').innerText = `Animal: ${choices.animal}`;
+            document.getElementById('choiceName').innerText = `Name: ${choices.name}`;
+            document.getElementById('choicePreference').innerText = `Preference: ${choices.preference}`;
+        }
+    </script>
+</body>
+</html>
